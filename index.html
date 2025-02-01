@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Food Menu</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #eaeaea;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            width: 380px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: 600;
+            color: #555;
+            display: block;
+            margin-bottom: 8px;
+        }
+        select, input[type="number"], input[type="checkbox"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            color: #333;
+        }
+        select {
+            background-color: #f9f9f9;
+        }
+        input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+        .result {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        button {
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 12px;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Random Food Menu</h1>
+        
+        <label for="mealType">เลือกมื้ออาหาร:</label>
+        <select id="mealType">
+            <option value="breakfast">มื้อเช้า</option>
+            <option value="lunch">มื้อกลางวัน</option>
+            <option value="dinner">มื้อเย็น</option>
+            <option value="snack">อาหารว่าง</option>
+        </select>
+
+        <label for="maxCalories">แคลอรี่สูงสุด:</label>
+        <input type="number" id="maxCalories" placeholder="กรุณาระบุแคลอรี่สูงสุด" min="0">
+
+        <label>แพ้อาหาร:</label>
+        <label><input type="checkbox" id="seafood"> อาหารทะเล</label>
+        <label><input type="checkbox" id="dairy"> นม</label> <!-- เพิ่มตัวเลือกแพ้อาหารนม -->
+        <label><input type="checkbox" id="egg"> ไข่</label> <!-- เพิ่มตัวเลือกแพ้อาหารไข่ -->
+        <label><input type="checkbox" id="nuts"> ถั่ว</label> <!-- เพิ่มตัวเลือกแพ้อาหารถั่ว -->
+
+        <label>โรคประจำตัว:</label>
+        <label><input type="checkbox" id="diabetes"> เบาหวาน</label>
+        <label><input type="checkbox" id="hyperlipidemia"> ไขมันสูง</label>
+
+        <button onclick="getRandomMenu()">สุ่มเมนู</button>
+
+        <div class="result" id="result"></div>
+        <div class="error-message" id="errorMessage"></div>
+    </div>
+
+    <script>
+        const menus = {
+            lunch: [
+                { name: 'ข้าวผัด', calories: 350, allergens: [], diabetesSafe: false, hyperlipidemiaSafe: true },
+                { name: 'สลัดผัก', calories: 150, allergens: [], diabetesSafe: true, hyperlipidemiaSafe: true },
+                { name: 'แกงเขียวหวาน', calories: 400, allergens: [], diabetesSafe: false, hyperlipidemiaSafe: false },
+                { name: 'ข้าวมันไก่', calories: 600, allergens: ['egg'], diabetesSafe: false, hyperlipidemiaSafe: false },
+                { name: 'ข้าวต้ม', calories: 250, allergens: [], diabetesSafe: true, hyperlipidemiaSafe: true }
+            ],
+            dinner: [
+                { name: 'สเต็ก', calories: 600, allergens: ['dairy'], diabetesSafe: false, hyperlipidemiaSafe: false },
+                { name: 'ข้าวมันไก่', calories: 600, allergens: ['egg'], diabetesSafe: false, hyperlipidemiaSafe: false },
+                { name: 'ก๋วยเตี๋ยว', calories: 400, allergens: [], diabetesSafe: true, hyperlipidemiaSafe: true },
+                { name: 'ยำวุ้นเส้น', calories: 200, allergens: ['seafood'], diabetesSafe: true, hyperlipidemiaSafe: true },
+                { name: 'ข้าวผัด', calories: 350, allergens: [], diabetesSafe: true, hyperlipidemiaSafe: true }
+            ],
+            breakfast: [
+                { name: 'ข้าวต้ม', calories: 250, allergens: [], diabetesSafe: true, hyperlipidemiaSafe: true },
+                { name: 'ขนมปังปิ้ง', calories: 200, allergens: ['dairy'], diabetesSafe: false, hyperlipidemiaSafe: false },
+                { name: 'ไข่ดาว', calories: 150, allergens: ['egg'], diabetesSafe: false, hyperlipidemiaSafe: true },
+                { name: 'โอ๊ตมีล', calories: 300, allergens: [], diabetesSafe: true, hyperlipidemiaSafe: true },
+                { name: 'แพนเค้ก', calories: 350, allergens: ['egg', 'dairy'], diabetesSafe: false, hyperlipidemiaSafe: false }
+            ],
+            snack: [
+                { name: 'ขนมปังปิ้ง', calories: 150, allergens: ['dairy'], diabetesSafe: false, hyperlipidemiaSafe: false },
+                { name: 'ผลไม้สด', calories: 100, allergens: [], diabetesSafe: true, hyperlipidemiaSafe: true },
+                { name: 'โยเกิร์ต', calories: 120, allergens: ['dairy'], diabetesSafe: false, hyperlipidemiaSafe: false },
+                { name: 'ถั่วอบ', calories: 180, allergens: ['nuts'], diabetesSafe: true, hyperlipidemiaSafe: true },
+                { name: 'ป๊อปคอร์น', calories: 200, allergens: [], diabetesSafe: true, hyperlipidemiaSafe: true }
+            ]
+        };
+
+        function getRandomMenu() {
+            const mealType = document.getElementById('mealType').value;
+            const maxCalories = parseInt(document.getElementById('maxCalories').value);
+            const allergySeafood = document.getElementById('seafood').checked;
+            const allergyDairy = document.getElementById('dairy').checked;
+            const allergyEgg = document.getElementById('egg').checked;
+            const allergyNuts = document.getElementById('nuts').checked;
+            const diabetes = document.getElementById('diabetes').checked;
+            const hyperlipidemia = document.getElementById('hyperlipidemia').checked;
+
+            let filteredMenus = [...menus[mealType]];  // Clone the mealType menu array
+            let errorMessage = '';
+
+            // Validate maxCalories
+            if (isNaN(maxCalories) || maxCalories < 0) {
+                errorMessage = 'กรุณาระบุแคลอรี่สูงสุดให้ถูกต้อง';
+                document.getElementById('errorMessage').innerText = errorMessage;
+                return;
+            } else {
+                document.getElementById('errorMessage').innerText = '';
+            }
+
+            // กรองเมนูจากแคลอรี่สูงสุด
+            filteredMenus = filteredMenus.filter(menu => menu.calories <= maxCalories);
+
+            // กรองเมนูตามอาการแพ้อาหาร
+            if (allergySeafood) {
+                filteredMenus = filteredMenus.filter(menu => !menu.allergens.includes('seafood'));
+            }
+            if (allergyDairy) {
+                filteredMenus = filteredMenus.filter(menu => !menu.allergens.includes('dairy'));
+            }
+            if (allergyEgg) {
+                filteredMenus = filteredMenus.filter(menu => !menu.allergens.includes('egg'));
+            }
+            if (allergyNuts) {
+                filteredMenus = filteredMenus.filter(menu => !menu.allergens.includes('nuts'));
+            }
+
+            // กรองเมนูตามโรคประจำตัว
+            if (diabetes) {
+                filteredMenus = filteredMenus.filter(menu => menu.diabetesSafe);
+            }
+            if (hyperlipidemia) {
+                filteredMenus = filteredMenus.filter(menu => menu.hyperlipidemiaSafe);
+            }
+
+            if (filteredMenus.length > 0) {
+                // สุ่มเมนูจากเมนูที่กรองแล้ว
+                const randomIndex = Math.floor(Math.random() * filteredMenus.length);
+                const selectedMenu = filteredMenus[randomIndex];
+                document.getElementById('result').innerText = `เมนูที่สุ่มได้: ${selectedMenu.name} - ${selectedMenu.calories} แคลอรี่`;
+            } else {
+                document.getElementById('result').innerText = 'ไม่พบเมนูที่ตรงกับเงื่อนไขของคุณ';
+            }
+        }
+    </script>
+
+</body>
+</html>
